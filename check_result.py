@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser(description="Process gene name and SNP name.")
 # Add arguments for gene name and SNP name
 parser.add_argument('--gene_name', type=str, default="LRRC32", help="The name of the gene.")
 parser.add_argument('--snp_name', type=str, default="rs2155219", help="The name of the SNP.")
-parser.add_argument('--index', type=int, default=5312, help="The index of track number, 0 - 5312.")
+parser.add_argument('--index', type=int, default=1, help="The index of track number, 0 - 5312.")
 
 
 # Parse the arguments
@@ -44,7 +44,7 @@ with h5py.File(path_result, 'r') as h5f:
 	print("value computed by summing all 896 bins: ",sum_896bins[args.index]) 
 	sum_gene_region = h5f['sum_gene_diff'][0] 
 	print("value computed by summing gene region: ",sum_gene_region[args.index]) 
-	gene_coverage = h5f['gene_coverage_rate'][()]
+	gene_coverage = h5f['gene_coverage'][()]
 	print("percentage of gene region cover in 896 bins: ",gene_coverage) 
 
 print("description of track: ",description) 

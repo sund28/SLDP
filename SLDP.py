@@ -177,7 +177,7 @@ gene_snp8 = Gene_SNP(  # rs6690215
 consensus_dir = '/projects/zhanglab/users/dongbo/personalized-expression-benchmark/data/ref_fasta' # TODO path to consensus sequences (reference seq)
 genes_file = '/projects/zhanglab/users/dongbo/gene_3000.csv'
 
-SEQUENCE_LENGTH = 196_608 # 
+SEQUENCE_LENGTH = 196_608 # input_Length
 # SEQUENCE_LENGTH = 10 # test now, TSS-5, TSS+5, only one side is included, 5th [4] is TSS then. 
 
 
@@ -185,7 +185,7 @@ SEQUENCE_LENGTH = 196_608 #
 '''
 input gene position and correpond SNP position here. 
 '''
-gene_snp = gene_snp8 # choose object to use, only 1,3,5,7 within enformer region now. 
+gene_snp = gene_snp5 # choose object to use, only 1,3,5,7 within enformer region now. 
 
 gene_name = gene_snp.gene_name 
 TSS = gene_snp.TSS 
@@ -197,12 +197,15 @@ SNP_id = gene_snp.SNP_id
 assert gene_snp.chr == gene_snp.SNP_chr, "gene and SNP should be in the same chromosome" 
 
 print("TSS: ",TSS, " ref: ",ref, " alt: ",alt) 
-start = int(TSS) - SEQUENCE_LENGTH // 2
-end = int(TSS) + SEQUENCE_LENGTH // 2 
-print("start of enformer input: ",start, " end of enformer input: ",end, 'chr: ',chr) 
+start_input = int(TSS) - SEQUENCE_LENGTH // 2  # 196608/2 = 98304, is input seq length, not mix with output seq length, which is 
+end_input = int(TSS) + SEQUENCE_LENGTH // 2 
+start_output = int(TSS) - 57344 # 57344 is half output length of Enformer. 
+end_output = int(TSS) + 57344 
+
+print("start of enformer input: ",start_input, " end of enformer input: ",end_input, 'chr: ',chr) 
 ref_gene_file = os.path.join(consensus_dir, f'chr{chr}.fa')
 fasta_extractor = FastaStringExtractor(ref_gene_file) 
-target_interval = kipoiseq.Interval(f'chr{chr}', start, end)
+target_interval = kipoiseq.Interval(f'chr{chr}', start_input, end_input)
 # sequence_letter = fasta_extractor.extract(target_interval.resize(SEQUENCE_LENGTH)) # 10 now,TSS-5, TSS+4, only one side is included. 
 sequence_letter = fasta_extractor.extract(target_interval) # 196608. mind rechange seq length, maybe make coordinate wrong. try make sure for more genes. 
 TSS_letter_Index = SEQUENCE_LENGTH // 2 -1 # use to index TSS in extracted seq .
@@ -292,8 +295,8 @@ gene_start = row['start']
 gene_end = row['end'] 
 gene_chr = row['seqname']  # like chr1 
 assert gene_chr == 'chr'+str(chr), "gene and SNP should be in the same chromosome" 
-bin_start = (gene_start - start) // 128 # 
-bin_end = (gene_end - start) // 128 # index of bin start and end. 
+bin_start = (gene_start - start_output) // 128 # 
+bin_end = (gene_end - start_output) // 128 # index of bin start and end. 
 length_bins = bin_end - bin_start + 1 # length of gene region in bins. use to compute after clip how many percent left. 
 print("bin start and end of gene: ",bin_start, bin_end) # print bin start and end. 0 - 895 
 if bin_start < 0: 
